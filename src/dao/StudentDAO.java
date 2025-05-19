@@ -39,12 +39,12 @@ public class StudentDAO {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String studentId = rs.getString("student_id");
+                Student studentDto = new Student();
+                studentDto.setId(rs.getInt("id"));
+                studentDto.setName(rs.getString("name"));
+                studentDto.setStudentId(rs.getString("student_id"));
 
-                Student student = new Student(id, name, studentId);
-                studentList.add(student);
+                studentList.add(studentDto);
             }
 
         }
@@ -52,18 +52,19 @@ public class StudentDAO {
         return studentList;
     }
 
-
     // 학생 Student_ID로 학생 인증(로그인용) 기능 만들기
     public Student authenticateStudent(String searchStudentId) throws SQLException {
         //List<Student> studentList = new ArrayList<>();
         Student searchStudentInfo = new Student();
         String sql = "SELECT * FROM STUDENTS WHERE student_id = ? ";
 
-        try(Connection conn = DatabaseUtil.getConnect();
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseUtil.getConnect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, searchStudentId);
 
             ResultSet rs = pstmt.executeQuery();
+
+            // 학생이 정확한 학번을 입력하면 Student 객체가 만들어져서 리턴 됨
             boolean isGetSearchedRows = false;
             while (rs.next()) {
                 isGetSearchedRows = true;
@@ -71,15 +72,12 @@ public class StudentDAO {
                 searchStudentInfo.setName(rs.getString("name"));
                 searchStudentInfo.setStudentId(rs.getString("student_id"));
             }
-
+            // 학생이 잘못된 학번을 입력하면 null 값을 반환함
             if (!isGetSearchedRows) {
                 //System.out.println("조회된 정보가 없습니다.");
                 return null;
             }
         }
-        // 학생이 정확한 학번을 입력하면 Student 객체가 만들어져서 리턴 됨
-
-        // 학생이 잘못된 학번을 입력하면 null 값을 반환함
 
         return searchStudentInfo;
     }
@@ -91,12 +89,12 @@ public class StudentDAO {
         Scanner sc = new Scanner(System.in);
 
         while (true) {
-            System.out.println("학생 정보관리 프로그램");
+            System.out.println("============== 학생 정보관리 프로그램 =================");
             System.out.println("1.학생정보 등록, 2.학생정보 전체조회, 3.특정 학생정보 조회, 4.프로그램 종료");
             System.out.print("입력 : ");
             String selectedNum = sc.nextLine();
 
-            if (selectedNum.trim().equals("1")){
+            if (selectedNum.trim().equals("1")) {
                 System.out.println("등록할 학생의 이름을 입력 해주세요.");
                 System.out.print("입력 : ");
                 String targetName = sc.nextLine();
@@ -113,55 +111,42 @@ public class StudentDAO {
                     throw new RuntimeException(e);
                 }
 
-            } else if (selectedNum.trim().equals("2")){
+            } else if (selectedNum.trim().equals("2")) {
+                try {
+                    System.out.println("==============전체 학생정보 조회 ========================");
+                    for (int i = 0; i < studentDAO.getAllStudents().size(); i++) {
+                        System.out.println(studentDAO.getAllStudents().get(i));
+                    }
+                    System.out.println("=========================================================");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (selectedNum.trim().equals("3")) {
+                System.out.println("조회할 학생의 학생_ID를 입력 해주세요.");
+                System.out.print("입력 : ");
+                String targetStudentId = sc.nextLine();
 
-            } else if (selectedNum.trim().equals("3")){
+                try {
+                    Student studentInfo = studentDAO.authenticateStudent(targetStudentId);
 
-            } else if (selectedNum.trim().equals("4")){
-
+                    if (studentInfo == null) {
+                        System.out.println("조회된 정보가 없습니다.");
+                    } else {
+                        System.out.println("================ 조회 결과 =================");
+                        System.out.print("id : " + studentInfo.getId() + "\t");
+                        System.out.print("name : " + studentInfo.getName() + "\t");
+                        System.out.println("studentId : " + studentInfo.getStudentId() + "\t");
+                        System.out.println("============================================");
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (selectedNum.trim().equals("4")) {
+                System.out.println("프로그램을 종료 합니다.");
+                break;
             } else {
                 System.out.println("정확한 값을 입력 해주세요.");
             }
         }
-
-        /*
-        Student student1 = new Student();
-        student1.setName("이순신");
-        student1.setStudentId("20250002");
-
-        try {
-            studentDAO.addStudent(student1);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-         */
-
-        /*
-        try {
-            for (int i = 0; i < studentDAO.getAllStudents().size(); i++) {
-                System.out.println(studentDAO.getAllStudents().get(i));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        */
-
-        /*
-        try {
-            Student studentInfo = studentDAO.authenticateStudent("20250002");
-
-            if (studentInfo == null) {
-                System.out.println("조회된 정보가 없습니다.");
-            } else {
-                System.out.println("id : " + studentInfo.getId());
-                System.out.println("name : " + studentInfo.getName());
-                System.out.println("studentId : " + studentInfo.getStudentId());
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        */
-
     }
 }
