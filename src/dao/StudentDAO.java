@@ -55,7 +55,7 @@ public class StudentDAO {
     // 학생 Student_ID로 학생 인증(로그인용) 기능 만들기
     public Student authenticateStudent(String searchStudentId) throws SQLException {
         //List<Student> studentList = new ArrayList<>();
-        Student searchStudentInfo = new Student();
+
         String sql = "SELECT * FROM STUDENTS WHERE student_id = ? ";
 
         try (Connection conn = DatabaseUtil.getConnect();
@@ -65,21 +65,18 @@ public class StudentDAO {
             ResultSet rs = pstmt.executeQuery();
 
             // 학생이 정확한 학번을 입력하면 Student 객체가 만들어져서 리턴 됨
-            boolean isGetSearchedRows = false;
-            while (rs.next()) {
-                isGetSearchedRows = true;
+            //boolean isGetSearchedRows = false;
+            if (rs.next()){
+                Student searchStudentInfo = new Student();
                 searchStudentInfo.setId(rs.getInt("id"));
                 searchStudentInfo.setName(rs.getString("name"));
                 searchStudentInfo.setStudentId(rs.getString("student_id"));
-            }
-            // 학생이 잘못된 학번을 입력하면 null 값을 반환함
-            if (!isGetSearchedRows) {
-                //System.out.println("조회된 정보가 없습니다.");
-                return null;
+
+                return searchStudentInfo;
             }
         }
 
-        return searchStudentInfo;
+        return null;
     }
 
     // 테스트 코드
